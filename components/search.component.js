@@ -114,7 +114,13 @@ export class ElementsController {
 
         const createCard = (value, type) => {
             const archorElement = document.createElement("a");
-            router.listenNavigate(archorElement, "/" + type.slice(0, -1));
+            
+            if (type === 'tracks') {
+                archorElement.setAttribute('href', value.uri);
+                archorElement.classList.add('card-track');
+            } else {
+                router.listenNavigate(archorElement, ("/" + type.slice(0, -1)));
+            }
 
             const images =
                 value?.album?.images ||
@@ -125,7 +131,10 @@ export class ElementsController {
 
             archorElement.insertAdjacentHTML(
                 "beforeend", `
-                <img src="${image?.url || "./assets/images/placeholder.png"}" alt="${value.name} image">
+                <picture>
+                    <img src="${image?.url || "./assets/images/placeholder.png"}" alt="${value.name} image">
+                    <span class="material-icons">play_arrow</span>
+                </picture>
                 <p>${value.name}</p>
                 <span>
                     ${

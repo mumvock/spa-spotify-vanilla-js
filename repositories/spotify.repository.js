@@ -38,13 +38,12 @@ const SpotifyRepository = (() => {
                 }
             ).then(async (response) => {
                 const data = await response.json();
-    
                 return Object.entries(Object.keys(data).reduce(
                     (previousValue, currentValue) =>
                         data[currentValue].items[0] 
                             ? {
-                                  ...previousValue,
-                                  [currentValue]: data[currentValue].items,
+                                [currentValue]: data[currentValue].items,
+                                ...previousValue,
                               }
                             : previousValue,
                     {}

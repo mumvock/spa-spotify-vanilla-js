@@ -55,8 +55,6 @@ export class Router {
         let route = this.routes.filter((route) => route.path === path)[0];
 
         if (!route) {
-            route = this.routes.filter((route) => route.path === '/')[0];
-            
             return;
         }
 

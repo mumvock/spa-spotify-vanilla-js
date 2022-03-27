@@ -159,11 +159,50 @@ search-component section a span {
     font-size: .8rem;
 }
 
-search-component section a img {
+search-component section a picture {
     border-radius: .5rem;
+    display: block;
     height: 138px;
-    object-fit: cover;
     width: 100%;
+}
+
+search-component section a img {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+}
+
+search-component section a.card-track:hover picture {
+    color: var(--text-color);
+    position: relative;
+}
+
+search-component section a.card-track:hover picture::before {
+    content: "";
+    display: block;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    position: absolute;
+}
+
+search-component section a.card-track:hover picture img {
+    opacity: .3;
+}
+
+search-component section a.card-track:hover picture span.material-icons {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: #e7e7e7;
+    font-size: 5rem;
+}
+
+search-component section a picture span.material-icons {
+    display: none;
 }
 
 search-component section#not-found {
