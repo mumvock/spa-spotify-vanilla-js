@@ -13,8 +13,8 @@ export const componentSettings = {
                 <button type="submit" title="Search"><span class="material-icons">search</span></button>
             </form>
         </header>
-    `
-}
+    `,
+};
 
 export class ComponentController {
     elementsController;
@@ -76,16 +76,11 @@ export class ElementsController {
         };
     }
 
-    centralizeClass = (() => {
-        const remove = () =>
-            this.componentElement.classList.remove("centralize");
-        const add = () => this.componentElement.classList.add("centralize");
-
-        return {
-            add,
-            remove,
-        };
-    })();
+    centralizeClass = (() => ({
+        remove: () =>
+            this.componentElement.classList.remove("centralize"),
+        add: () => this.componentElement.classList.add("centralize"),
+    }))();
 
     form = (() => {
         let HTMLElements;
@@ -105,8 +100,12 @@ export class ElementsController {
                 ..._sectionElements,
                 [type]: (() => {
                     const section = document.createElement("section");
-                    section.insertAdjacentHTML("beforeend",
-                        `<h2>${type.charAt(0).toUpperCase() + type.slice(1)}</h2>`);
+                    section.insertAdjacentHTML(
+                        "beforeend",
+                        `<h2>${
+                            type.charAt(0).toUpperCase() + type.slice(1)
+                        }</h2>`
+                    );
                     this.componentElement.appendChild(section);
 
                     return section;
@@ -115,32 +114,31 @@ export class ElementsController {
         };
 
         const createCard = (value, type) => {
-            const archorElement = document.createElement('a');
-            router.listenNavigate(archorElement, ('/' + type.slice(0, -1)));
+            const archorElement = document.createElement("a");
+            router.listenNavigate(archorElement, "/" + type.slice(0, -1));
 
             const image =
                 value?.album?.images[0]?.url ||
                 (value.images && value?.images[0]?.url) ||
-                "";
+                "./assets/images/placeholder.png";
             archorElement.insertAdjacentHTML(
                 "beforeend",
-            `
-                <img src="${
-                    image || "./assets/images/placeholder.png"
-                }" alt="${value.name} image">
+                `
+                <img src="${image}" alt="${value.name} image">
                 <p>${value.name}</p>
                 <span>
                     ${
                         type !== "artists"
                             ? value.artists.reduce(
-                                    (p, c) =>
-                                        p.length ? p + ", " + c.name : c.name,
-                                    ""
-                                )
+                                  (p, c) =>
+                                      p.length ? p + ", " + c.name : c.name,
+                                  ""
+                              )
                             : ""
                     }
                 </span>
-            `);
+            `
+            );
 
             return archorElement;
         };
@@ -155,8 +153,9 @@ export class ElementsController {
         };
 
         const create = (searchResult) => {
-            remove();
+            this.centralizeClass.remove();
             this.notFound.remove();
+            remove();
 
             searchResult.forEach(([type, result]) => {
                 createSection(type);
@@ -165,8 +164,6 @@ export class ElementsController {
                     _sectionElements[type].appendChild(createCard(value, type))
                 );
             });
-
-            this.centralizeClass.remove();
         };
 
         // Exported properties
@@ -187,8 +184,8 @@ export class ElementsController {
         };
 
         const create = () => {
-            remove();
             this.results.remove();
+            remove();
 
             const element = document.createElement("section");
             element.setAttribute("id", "not-found");
