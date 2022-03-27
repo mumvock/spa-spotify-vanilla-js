@@ -250,7 +250,11 @@ search-component section#not-found > div > h2 {
         grid-template-columns: repeat(auto-fill, 128px);
     }
 
-    search-component section a img {
+    search-component section a picture {
         height: 96px;
+    }
+
+    search-component section a.card-track:hover picture span.material-icons {
+        font-size: 4rem;
     }
 }
