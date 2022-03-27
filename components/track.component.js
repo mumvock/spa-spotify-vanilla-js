@@ -22,7 +22,6 @@ export class ComponentController {
     };
 
     onDestroy = () => {
-        console.log("destruiu");
     };
 }
 

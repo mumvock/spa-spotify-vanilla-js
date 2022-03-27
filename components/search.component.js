@@ -35,7 +35,6 @@ export class ComponentController {
     };
 
     onDestroy = () => {
-        console.log("destruiu");
     };
 
     listenSubmit = () => {
@@ -117,14 +116,16 @@ export class ElementsController {
             const archorElement = document.createElement("a");
             router.listenNavigate(archorElement, "/" + type.slice(0, -1));
 
-            const image =
-                value?.album?.images[0]?.url ||
-                (value.images && value?.images[0]?.url) ||
-                "./assets/images/placeholder.png";
+            const images =
+                value?.album?.images ||
+                (value.images && value?.images);
+
+            // Pega a menor imagem contanto que seja maior que 95px (96px é o tamanho mínimo exibido nos cards)
+            const image = images.reduce((p, c) => ((p.height || 9999) > c.height) && (c.height > 95) ? c : p, {});
+
             archorElement.insertAdjacentHTML(
-                "beforeend",
-                `
-                <img src="${image}" alt="${value.name} image">
+                "beforeend", `
+                <img src="${image?.url || "./assets/images/placeholder.png"}" alt="${value.name} image">
                 <p>${value.name}</p>
                 <span>
                     ${
@@ -137,8 +138,7 @@ export class ElementsController {
                             : ""
                     }
                 </span>
-            `
-            );
+            `);
 
             return archorElement;
         };
