@@ -1,9 +1,8 @@
 import SpotifyRepository from "../repositories/spotify.repository.js";
 import { router } from "./../core/router.js";
 
-export const componentSettings = {
-    selector: "search-component",
-    template: `
+export class ComponentController {
+    template  = () => `
         <header>
             <img src="./assets/images/spotify-logo.svg" alt="Spotify logo">
             <form>
@@ -13,10 +12,7 @@ export const componentSettings = {
                 <button type="submit" title="Search"><span class="material-icons">search</span></button>
             </form>
         </header>
-    `,
-};
-
-export class ComponentController {
+    `;
     elementsController;
 
     constructor(ElementsController) {
@@ -26,6 +22,7 @@ export class ComponentController {
         return {
             onInit: this.onInit,
             onDestroy: this.onDestroy,
+            template: this.template,
         };
     }
 
@@ -119,7 +116,7 @@ export class ElementsController {
                 archorElement.setAttribute('href', value.uri);
                 archorElement.classList.add('card-track');
             } else {
-                router.listenNavigate(archorElement, ("/" + type.slice(0, -1)));
+                router.listenNavigate(archorElement, "/details", value);
             }
 
             const images =

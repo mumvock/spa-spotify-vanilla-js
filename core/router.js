@@ -39,7 +39,7 @@ export class Router {
         // })(window.history);
 
         return {
-            listenNavigate: (element, path) => this.listenNavigate(element, path),
+            listenNavigate: (element, path, data) => this.listenNavigate(element, path, data),
             currentPath: this.currentPath,
             navigate: (path) => this.navigate(path),
             previousRoute: this.previousRoute,
@@ -47,11 +47,11 @@ export class Router {
         };
     }
 
-    listenNavigate(element, path) {
-        element.addEventListener('click', () => this.navigate(path), false)
+    listenNavigate(element, path, data) {
+        element.addEventListener('click', () => this.navigate(path, data), false)
     }
 
-    navigate(path) {
+    navigate(path, data) {
         let route = this.routes.filter((route) => route.path === path)[0];
 
         if (!route) {
@@ -59,25 +59,28 @@ export class Router {
         }
 
         this.destroyComponent();
-        this.appendComponent(route);
+        this.appendComponent(route, data);
     }
 
-    async appendComponent(route) {
+    async appendComponent(route, data) {
         this.previousRoute = this.currentPath();
-        window.history.pushState({}, '', route.path);
+        // window.history.pushState({}, '', route.path);
         
-        const { ComponentController, ElementsController, componentSettings } = await route.loadChildren();
+        const { ComponentController, ElementsController } = await route.loadChildren();
 
-        this._currentComponentElement = document.createElement(componentSettings.selector);
+        this._currentComponentElement = document.createElement(route.name.toLowerCase() + '-component');
+        
+        const componentInstance = new ComponentController(
+            new ElementsController(this._currentComponentElement),
+            data
+        );
+
         this._currentComponentElement.insertAdjacentHTML(
             "beforeend",
-            componentSettings.template
+            componentInstance.template(data)
         );
+    
         document.body.appendChild(this._currentComponentElement);
-
-        const componentInstance = new ComponentController(
-            new ElementsController(this._currentComponentElement)
-        );
         componentInstance.onInit && componentInstance.onInit();
 
         this._currentComponent = componentInstance;
@@ -101,8 +104,8 @@ export const router = new Router([
         loadChildren: () => import('../components/search.component.js').then(m => m)
     },
     {
-        path: '/track',
-        name: 'Track',
-        loadChildren: () => import('../components/track.component.js').then(m => m)
+        path: '/details',
+        name: 'Details',
+        loadChildren: () => import('../components/details.component.js').then(m => m)
     },
 ]);
