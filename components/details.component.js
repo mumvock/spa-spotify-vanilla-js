@@ -12,7 +12,6 @@ export class ComponentController {
 
     constructor(ElementsController, data) {
         this.elementsController = ElementsController;
-        console.log('DATA >>>', data);
 
         // Exported properties
         return {

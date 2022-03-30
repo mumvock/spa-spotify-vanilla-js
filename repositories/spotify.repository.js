@@ -1,21 +1,21 @@
 const SpotifyRepository = (() => {
-    let token = "";
+    let token = '';
 
-    const getToken = (async() => {
+    const getToken = (async () => {
         const requestToken = async () => {
-            const clientId = "cceaa5f812a84946b7c8095b83499ab8";
-            const clientSecret = "7d07e7dc30e84713b0362393f346b3f0";
+            const clientId = 'cceaa5f812a84946b7c8095b83499ab8';
+            const clientSecret = '7d07e7dc30e84713b0362393f346b3f0';
 
             const result = await fetch(
-                "https://accounts.spotify.com/api/token",
+                'https://accounts.spotify.com/api/token',
                 {
-                    method: "POST",
+                    method: 'POST',
                     headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
+                        'Content-Type': 'application/x-www-form-urlencoded',
                         Authorization:
-                            "Basic " + btoa(clientId + ":" + clientSecret),
+                            'Basic ' + btoa(clientId + ':' + clientSecret),
                     },
-                    body: "grant_type=client_credentials",
+                    body: 'grant_type=client_credentials',
                 }
             );
 
@@ -23,33 +23,39 @@ const SpotifyRepository = (() => {
             return (token = response.access_token);
         };
 
-        return token || await requestToken();
+        return token || (await requestToken());
     })();
 
     return {
-        async searchAll (value) {
+        async searchAll(value) {
             return fetch(
                 `https://api.spotify.com/v1/search?q=${value}&type=album,artist,track&limit=7`,
                 {
-                    method: "GET",
+                    method: 'GET',
                     headers: {
-                        Authorization: "Bearer " + (await getToken),
+                        Authorization: 'Bearer ' + (await getToken),
                     },
                 }
             ).then(async (response) => {
                 const data = await response.json();
-                return Object.entries(Object.keys(data).reduce(
-                    (previousValue, currentValue) =>
-                        data[currentValue].items[0] 
-                            ? {
-                                [currentValue]: data[currentValue].items,
-                                ...previousValue,
-                              }
-                            : previousValue,
-                    {}
-                ));
+                return Object.keys(data).reduce(
+                    (previousValue, currentValue) => {
+                        return data[currentValue].items.length
+                            ? [
+                                  {
+                                      type:
+                                          currentValue.charAt(0).toUpperCase() +
+                                          currentValue.substr(1).toLowerCase(),
+                                      items: data[currentValue].items,
+                                  },
+                                  ...previousValue,
+                              ]
+                            : previousValue;
+                    },
+                    []
+                );
             });
-        }
+        },
     };
 })();
 export default SpotifyRepository;

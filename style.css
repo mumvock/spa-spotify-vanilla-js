@@ -54,8 +54,8 @@ a {
     }
 }
 
-/* Search */
-search-component {
+/* spa-search-component */
+spa-search-component {
     display: block;
     margin: 0 auto 0 auto;
     max-width: var(--container-width);
@@ -63,19 +63,19 @@ search-component {
     width: 100%;
 }
 
-search-component > header {
+spa-search-component > header {
     display: flex;
     width: 100%;
     max-width: 750px;
 }
 
-search-component > header > img {
+spa-search-component > header > img {
     margin-right: 2rem;
     max-width: 150px;
     width: 100%;
 }
 
-search-component.centralize {
+spa-search-component.centralize {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -83,24 +83,24 @@ search-component.centralize {
     margin-bottom: auto;
 }
 
-search-component.centralize > header {
+spa-search-component.centralize > header {
     flex-direction: column;
 }
 
-search-component.centralize > header > img {
+spa-search-component.centralize > header > img {
     margin-bottom: 2rem;
     margin-right: 0;
     max-width: 270px;
 }
 
-search-component.centralize form button {
+spa-search-component.centralize form button {
     align-items: center;
     display: flex;
     margin-left: 1rem;
     padding: 1rem 1.2rem;
 }
 
-search-component section {
+spa-search-component section {
     column-gap: 1.5rem;
     display: grid;
     grid-template-columns: repeat(auto-fill, 170px);
@@ -109,16 +109,16 @@ search-component section {
     overflow: hidden;
 }
 
-search-component form {
+spa-search-component form {
     display: flex;
     width: 100%;
 }
 
-search-component form input {
+spa-search-component form input {
     width: 100%;
 }
 
-search-component:not(.centralize) form button {
+spa-search-component:not(.centralize) form button {
     align-items: center;
     display: flex;
     background-color: transparent;
@@ -130,16 +130,16 @@ search-component:not(.centralize) form button {
     margin-bottom: auto;
 }
 
-search-component button span.material-icons {
+spa-search-component button span.material-icons {
     line-height: 0;
 }
 
-search-component section h2 {
+spa-search-component section h2 {
     margin-top: 3rem;
     grid-column: 1 / -1;
 }
 
-search-component section a {
+spa-search-component section a {
     background-color: #1c1c1c;
     border-radius: 1rem;
     color: var(--text-color);
@@ -147,12 +147,12 @@ search-component section a {
     text-decoration: none;
 }
 
-search-component section a:last-of-type {
+spa-search-component section a:last-of-type {
     margin-right: 0;
 }
 
-search-component section a p,
-search-component section a span {
+spa-search-component section a p,
+spa-search-component section a span {
     display: block;
     margin-bottom: 0;
     overflow: hidden;
@@ -160,30 +160,30 @@ search-component section a span {
     white-space: nowrap;
 }
 
-search-component section a span {
+spa-search-component section a span {
     color: #aeaeae;
     font-size: .8rem;
 }
 
-search-component section a picture {
+spa-search-component section a picture {
     border-radius: .5rem;
     display: block;
     height: 138px;
     width: 100%;
 }
 
-search-component section a img {
+spa-search-component section a img {
     object-fit: cover;
     height: 100%;
     width: 100%;
 }
 
-search-component section a.card-track:hover picture {
+spa-search-component section a.card-track:hover picture {
     color: var(--text-color);
     position: relative;
 }
 
-search-component section a.card-track:hover picture::before {
+spa-search-component section a.card-track:hover picture::before {
     content: "";
     display: block;
     left: 0;
@@ -193,11 +193,11 @@ search-component section a.card-track:hover picture::before {
     position: absolute;
 }
 
-search-component section a.card-track:hover picture img {
+spa-search-component section a.card-track:hover picture img {
     opacity: .3;
 }
 
-search-component section a.card-track:hover picture span.material-icons {
+spa-search-component section a.card-track:hover picture span.material-icons {
     display: block;
     position: absolute;
     left: 50%;
@@ -207,42 +207,42 @@ search-component section a.card-track:hover picture span.material-icons {
     font-size: 5rem;
 }
 
-search-component section a picture span.material-icons {
+spa-search-component section a picture span.material-icons {
     display: none;
 }
 
-search-component section#not-found {
+spa-search-component section#not-found {
     align-items: center;
     display: flex;
     justify-content: center;
     margin-top: 10rem;
 }
 
-search-component section#not-found > span:first-of-type {
+spa-search-component section#not-found > span:first-of-type {
     font-size: 5rem;
 }
 
-search-component section#not-found > div > h2 {
+spa-search-component section#not-found > div > h2 {
     margin: 0;
 }
 
 @media (max-width: 768px) {
-    search-component > header {
+    spa-search-component > header {
         flex-direction: column;
     }
 
-    search-component > header > img {
+    spa-search-component > header > img {
         margin-bottom: 1.5rem;
     }
 
-    search-component.centralize > header > img {
+    spa-search-component.centralize > header > img {
         max-width: 150px;
         text-align: center;
         margin-left: auto;
         margin-right: auto;
     }
 
-    search-component.centralize form button {
+    spa-search-component.centralize form button {
         background-color: transparent;
         justify-content: center;
         height: 3rem;
@@ -252,21 +252,21 @@ search-component section#not-found > div > h2 {
         width: 3rem;
     }
 
-    search-component section {
+    spa-search-component section {
         grid-template-columns: repeat(auto-fill, 128px);
     }
 
-    search-component section a picture {
+    spa-search-component section a picture {
         height: 96px;
     }
 
-    search-component section a.card-track:hover picture span.material-icons {
+    spa-search-component section a.card-track:hover picture span.material-icons {
         font-size: 4rem;
     }
 }
 
-/* details */
-details-component header > div {
+/* spa-details-component */
+spa-details-component header > div {
     position: absolute;
     left: 0;
     right: 0;
