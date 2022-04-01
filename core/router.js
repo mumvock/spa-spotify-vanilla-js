@@ -105,12 +105,12 @@ export class ComponentController {
         );
 
         this._component.onDestroy = componentInstance.onDestroy;
-
+        
         componentElement.insertAdjacentHTML(
             'beforeend',
             componentInstance.template()
         );
-
+        
         elementsController._onInit(componentInstance);
 
         document.body.appendChild(componentElement);
@@ -159,7 +159,7 @@ export class ElementsController {
     };
 
     /**
-     * Busca e retorna elementos com atributo `spa` com valor
+     * Busca elementos com atributos `spa` e checam se seu valor está correto
      * @returns `NodeList` lista de elementos dinâmicos
      */
     _checkSpaAttributesValue() {
@@ -168,10 +168,7 @@ export class ElementsController {
             const currentAttributeValue = element.getAttribute('spa');
 
             if (!currentAttributeValue) {
-                console.error(
-                    'SPA ERROR: "spa" attribute needs a value. Problematic element:',
-                    element
-                );
+                throw new Error('"spa" attribute needs a value',  { cause: element });
             }
 
             const spaValueAlreadyUsed = attributeValues.find(
@@ -179,12 +176,7 @@ export class ElementsController {
             );
 
             if (spaValueAlreadyUsed) {
-                console.error(
-                    'SPA ERROR: "spa" attribute needs to be unique. Problematic element:',
-                    element
-                );
-
-                return;
+                throw new Error('"spa" attribute needs to be unique',  { cause: element });
             }
 
             return [...attributeValues, currentAttributeValue];
@@ -192,24 +184,26 @@ export class ElementsController {
     }
 
     /** Remove do DOM todos os elementos com expressão `spa-if` resultante em `false` */
-    _processSpaIfAttributes(template, interpretString) {
+    _processSpaIfAttributes(template, parent = []) {
         template.querySelectorAll('[spa-if]').forEach((element) => {
-            const unparsedExpression = element.getAttribute('spa-if');
-            const hasInterpulation = unparsedExpression.match(/{{(.*)}}/);
+            const spaIfChildOfSpaFor = element.parentNode.closest('[spa-for]');
 
-            if (hasInterpulation && !interpretString) {
+            if (spaIfChildOfSpaFor) {
                 return;
             }
 
-            let expression = !(
-                unparsedExpression === 'undefined' ||
-                unparsedExpression === 'false' ||
-                unparsedExpression === 'null' ||
-                unparsedExpression === '0'
-            );
-            
-            if (interpretString) {
-                expression = new Function('return ' + unparsedExpression)();
+            const unparsedExpression = element.getAttribute('spa-if');
+            let expression = unparsedExpression;
+
+            if (parent.length) {
+                parent.forEach((p, i) => expression = expression.replaceAll(new RegExp('\\b' + p.name + '\\b', 'g'), `arguments[${i}]`));
+                expression = new Function('try { return ' + expression + ' } catch { return false }').apply(this._componentInstance, parent.map((p) => p.value));
+            } else {
+                expression = new Function('try { return ' + expression + ' } catch { return "abort-spa-if" }').apply(this._componentInstance, []);
+            }
+
+            if (expression === 'abort-spa-if') {
+                return;
             }
 
             if (!expression) {
@@ -220,112 +214,116 @@ export class ElementsController {
         });
     }
 
-    _processSpaForAttributes(template, parentArrayItemName, parentItem) {
-        template.querySelectorAll('[spa-for]').forEach((element) => {
-            const getAttributeValue = (target) => {
-                const value = target.getAttribute('spa-for');
-
-                if (value.indexOf(' of ') === -1) {
-                    console.error(
-                        'SPA ERROR: "spa-for" attribute value needs to be in this format: spa-for="itemName of Array". Problematic element:',
-                        target
-                    );
-                }
-
-                return value;
-            };
-
-            const attributeValue = getAttributeValue(element);
-            const spaForChildOfSpaFor = element.parentNode.closest('[spa-for]');
-
-            if (spaForChildOfSpaFor) {
-                return;
+    _processSpaForAttributes(template, parent = []) {
+        template.querySelectorAll(':scope > *[spa-for]').forEach((element) => {
+            const attributeValue = element.getAttribute('spa-for') || '';
+            
+            if (!(/^[^\s]+\sof\s[^\s]+/.test(attributeValue))) {
+                throw new Error('"spa-for" attribute value needs to be in this format: spa-for="currentValue of array"',  { cause: element });
             }
 
             const attributeValueSplited = attributeValue.split(' of ');
-            const arrayItemName = attributeValueSplited[0].trim();
+            const valueName = attributeValueSplited[0].trim();
             let arrayName = attributeValueSplited[1].trim();
 
             const getForArray = () => {
-                arrayName = arrayName.replaceAll(new RegExp('\\b' + parentArrayItemName + '\\b', 'g'), 'arguments[0]');
-                return new Function('return ' + arrayName).apply(this._componentInstance, [parentItem]);
+                if (parent.length) {
+                    parent.forEach((p, i) => arrayName = arrayName.replaceAll(new RegExp('\\b' + p.name + '\\b', 'g'), `arguments[${i}]`));
+                    return new Function('return ' + arrayName).apply(this._componentInstance, parent.map((p) => p.value));
+                } else {
+                    return new Function('return ' + arrayName).apply(this._componentInstance, []);
+                }
             };
 
             const forArray = Array.isArray(getForArray()) ? getForArray() : getForArray()();
 
-            if (Array.isArray(forArray)) {
-                forArray.reduce((previousElement, item) => {
-                    const newElement = element.cloneNode(true);
-                    newElement.removeAttribute('spa-for');
+            if (!Array.isArray(forArray)) {
+                throw new Error('"spa-for" attribute value needs to be in this format: spa-for="currentValue of array"',  { cause: element });
+            }
 
-                    if (
-                        Array.from(newElement.querySelectorAll('[spa-for]'))[0]
-                    ) {
-                        this._processSpaForAttributes(
-                            newElement,
-                            arrayItemName,
-                            item
-                        );
+            forArray.reduce((previousElement, value) => {
+                const newElement = element.cloneNode(true);
+                newElement.removeAttribute('spa-for');
+
+                this._processSpaIfAttributes(newElement, [
+                    ...parent,
+                    {
+                        value,
+                        name: valueName,
                     }
+                ]);
 
-                    const replaceInterpulations = (interpulations, target) => {
-                        if (Array.isArray(interpulations) && interpulations.length) {
-                            interpulations.forEach((interpulation) => {
-                                let stringToReplace = interpulation
-                                    .match(/{{(.*)}}/)
-                                    .pop()
-                                    .trim();
+                if (newElement.querySelector(':scope > *[spa-for]')) {
+                    this._processSpaForAttributes(
+                        newElement,
+                        [
+                            ...parent,
+                            {
+                                value,
+                                name: valueName,
+                            }
+                        ]
+                    );
+                }
 
-                                stringToReplace = stringToReplace.replaceAll(new RegExp('\\b' + arrayItemName + '\\b', 'g'), 'arguments[0]');
-                                stringToReplace = stringToReplace.replaceAll(new RegExp('\\b' + parentArrayItemName + '\\b', 'g'), 'arguments[1]');
+                const replaceInterpulations = (interpulations, target) => {
+                    if (Array.isArray(interpulations) && interpulations.length) {
+                        interpulations.forEach((interpulation) => {
+                            let stringToReplace = interpulation
+                                .match(/\{\{([^}]+)\}}/)
+                                .pop()
+                                .trim();
 
-                                const replacedString = new Function('return ' + stringToReplace).apply(this._componentInstance, [item, parentItem]);
-                     
-                                if (target === 'innerHTML') {
-                                    newElement.innerHTML =
-                                        newElement.innerHTML.replace(
-                                            interpulation,
-                                            replacedString
-                                        );
-                                } else {
-                                    const attrValue = newElement.getAttribute(target);
-                                    newElement.setAttribute(target, attrValue.replace(
+                            stringToReplace = stringToReplace.replaceAll(/&#x([a-fA-F0-9]+);/g, (m, g) => String.fromCharCode(parseInt(g, 16)));
+                            stringToReplace = stringToReplace.replaceAll('&gt;', '>');
+                            stringToReplace = stringToReplace.replaceAll('&lt;', '<');
+                            
+                            stringToReplace = stringToReplace.replaceAll(new RegExp('\\b' + valueName + '\\b', 'g'), 'arguments[0]');
+                            parent.forEach((p, i) => stringToReplace = stringToReplace.replaceAll(new RegExp('\\b' + p.name + '\\b', 'g'), `arguments[${i}]`));
+                            const replacedString = new Function('return ' + stringToReplace).apply(this._componentInstance, [value, ...parent.map((p) => p.value)]);
+                    
+                            if (target === 'innerHTML') {
+                                newElement.innerHTML =
+                                    newElement.innerHTML.replace(
                                         interpulation,
                                         replacedString
-                                    ));
-                                }
-                            });
-                        }
-                    };
+                                    );
+                            } else {
+                                const attrValue = newElement.getAttribute(target);
+                                newElement.setAttribute(target, attrValue.replace(
+                                    interpulation,
+                                    replacedString
+                                ));
+                            }
+                        });
+                    }
+                };
 
-                    const getInterpulations = (str) => str.match(/{{(.*)}}/g);
-                    
-                    const innerHTMLInterpulations = getInterpulations(newElement.innerHTML);
-                    replaceInterpulations(innerHTMLInterpulations, 'innerHTML');
+                const getInterpulations = (str) => str.match(/\{\{([^}]+)\}}/g);
+                
+                const innerHTMLInterpulations = getInterpulations(newElement.innerHTML);
+                replaceInterpulations(innerHTMLInterpulations, 'innerHTML');
 
-                    Array.from(
-                        newElement.attributes
-                    ).forEach((attr) => {
-                        const hasInterpulations = getInterpulations(attr.nodeValue);
+                Array.from(
+                    newElement.attributes
+                ).forEach((attr) => {
+                    const hasInterpulations = getInterpulations(attr.nodeValue);
 
-                        if (hasInterpulations) {
-                            replaceInterpulations(hasInterpulations, attr.nodeName);
-                        }
-                    });
+                    if (hasInterpulations) {
+                        replaceInterpulations(hasInterpulations, attr.nodeName);
+                    }
+                });
 
-                    previousElement.insertAdjacentElement(
-                        'afterend',
-                        newElement
-                    );
+                previousElement.insertAdjacentElement(
+                    'afterend',
+                    newElement
+                );
 
-                    return newElement;
-                }, element);
-            }
+                return newElement;
+            }, element);
 
             template.removeChild(element);
         });
-
-        this._processSpaIfAttributes(template, true);
     }
 
     _updatedComponentElement = () => {

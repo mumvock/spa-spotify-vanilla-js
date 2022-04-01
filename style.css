@@ -277,4 +277,6 @@ spa-details-component header > div {
     background-repeat: no-repeat;
     background-size: cover;
     filter: blur(10px) brightness(0.4);
+
+    /* USAR backdrop-filter */
 }

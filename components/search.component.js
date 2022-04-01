@@ -11,32 +11,27 @@ export class ComponentController {
             </form>
         </header>
 
-        <spa-container spa="results" spa-if="${this.searchResult}">
+        <spa-container spa="results" spa-if="this.searchResult">
             <section spa-for="item of this.searchResult">
                 <h2>{{ item.type }}</h2>
-
+                
                 <a spa-for="item2 of item.items" href="{{ item2.uri }}" class="card-track">
                     <picture>
                         <img src="./assets/images/placeholder.png" alt="{{ item2.name }} image">
                         <span class="material-icons">play_arrow</span>
                     </picture>
+                    
                     <p>{{ item2.name }}</p>
-                    <span spa-if="{{ item.type !== 'Artists' }}">
-                        eae
+                    
+                    <span spa-if="item2.artists.length">
+                        {{ item2.artists.reduce(
+                            (p, c) => (p.length ? p + ', ' + c.name : c.name),
+                            ''
+                        )}}
                     </span>
                 </a>
             </section>
         </spa-container>
-
-        <section spa="notFound" spa-if="${
-            !this.searchResult && this.searchHasStarted
-        }" id="not-found">
-            <span class="material-icons">error_outline</span>
-            <div>
-                <h2>Nothing found</h2>
-                <span>Make sure you typed correctly or use fewer keywords or use different keywords.</span>
-            </div>
-        </section>
     `;
 
     elementsController;
@@ -46,13 +41,14 @@ export class ComponentController {
     constructor(ElementsController) {
         this.elementsController = ElementsController;
 
-        // Exported properties
-        return {
-            onInit: this.onInit,
-            onDestroy: this.onDestroy,
-            template: this.template,
-            searchResult: () => this.searchResult,
-        };
+        // // Exported properties
+        // return {
+        //     onInit: this.onInit,
+        //     onDestroy: this.onDestroy,
+        //     template: this.template,
+        //     searchHasStarted: () => this.searchHasStarted,
+        //     searchResult: () => this.searchResult,
+        // };
     }
 
     onInit = () => {
@@ -109,7 +105,7 @@ const createCard = (value, type) => {
     const images = value?.album?.images || (value.images && value?.images);
 
     // Pega a menor imagem contanto que seja maior que 95px (96px é o tamanho mínimo exibido nos cards)
-    const image = images.reduce(
+    const image = value?.album?.images || (value.images && value?.images).reduce(
         (p, c) => ((p.height || 9999) > c.height && c.height > 95 ? c : p),
         {}
     );
